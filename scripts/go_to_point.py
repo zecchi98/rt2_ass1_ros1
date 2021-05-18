@@ -5,9 +5,8 @@ import rospy
 from geometry_msgs.msg import Twist, Point
 from nav_msgs.msg import Odometry
 from tf import transformations
-from rt2_ass1_ros1.srv import Position
+from rt2_ass1_std.srv import Position
 import math
-import actionlib
 
 # robot state variables
 position_ = Point()
