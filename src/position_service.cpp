@@ -1,6 +1,7 @@
 #include "ros/ros.h"
 #include "rt2_ass1_ros1/RandomPosition.h"
 
+// no changes have been applied to this node
 double randMToN(double M, double N)
 {     return M + (rand() / ( RAND_MAX / (N-M) ) ) ; }
 
