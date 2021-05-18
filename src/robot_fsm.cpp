@@ -1,0 +1,165 @@
+
+#include <inttypes.h>
+#include <memory>
+#include "rclcpp/rclcpp.hpp"
+#include "rclcpp_components/register_node_macro.hpp"
+#include <iostream>
+
+#include "ros2_ass1/srv/command.hpp"
+#include "ros2_ass1/srv/random_position.hpp"
+#include "ros2_ass1/srv/position.hpp"
+#include "rclcpp_components/register_node_macro.hpp"
+using namespace std;
+using RandomPositionSRV = ros2_ass1::srv::RandomPosition;
+using CommandSRV = ros2_ass1::srv::Command;
+using PositionSRV = ros2_ass1::srv::Position;
+using std::placeholders::_1;
+using std::placeholders::_2;
+using std::placeholders::_3;
+rclcpp::Node::SharedPtr g_node = nullptr;
+
+bool need_to_send=false;
+bool response_from_rdm_position=false;
+bool loose_one_cycle=false;
+
+float X_target=0;
+float Y_target=0;
+float Theta_target=0;
+
+namespace ros2_ass1
+{
+  class Client_go_to_point : public rclcpp::Node
+  {
+  public:
+    
+    Client_go_to_point()
+    : Node("go_to_point_client")
+    {
+      client_ = this->create_client<PositionSRV>("/go_to_point");
+      while (!client_->wait_for_service(std::chrono::seconds(1))){
+      if (!rclcpp::ok()) {
+        RCLCPP_ERROR(this->get_logger(), "client interrupted while waiting for service to appear.");
+        return;
+      }
+      RCLCPP_INFO(this->get_logger(), "waiting for service go_to_point to appear...");
+      }
+      
+    this->request_ = std::make_shared<PositionSRV::Request>();
+    this->response_ = std::make_shared<PositionSRV::Response>();
+    }
+    
+    void call_server()
+    {
+
+
+      
+    auto result_future = client_->async_send_request(request_);
+    if (rclcpp::spin_until_future_complete(this->get_node_base_interface(), result_future) != rclcpp::FutureReturnCode::SUCCESS)
+    {
+      RCLCPP_ERROR(this->get_logger(), "service call failed :(");
+    }
+    this->response_=result_future.get();
+    }
+    
+    std::shared_ptr<PositionSRV::Request> request_;
+    std::shared_ptr<PositionSRV::Response> response_;
+    
+  private:
+    rclcpp::Client<PositionSRV>::SharedPtr client_;  
+  };
+
+
+
+class Server_ros2 : public rclcpp::Node
+{
+public:
+  Server_ros2(const rclcpp::NodeOptions & options)
+  : Node("Server_ros2", options)
+  {
+    service_ = this->create_service<CommandSRV>("/commandservice", std::bind(&Server_ros2::handle_service, this, _1, _2, _3));
+    timer_ =this->create_wall_timer(std::chrono::milliseconds(100), std::bind(&Server_ros2::timer_callback, this));
+    RP_client=this->create_client<RandomPositionSRV>("/random_position_service");
+  }
+
+private:
+
+  void handle_service(
+  const std::shared_ptr<rmw_request_id_t> request_header,
+  const std::shared_ptr<CommandSRV::Request> request,
+  const std::shared_ptr<CommandSRV::Response> response)
+  {
+  
+  
+  (void)request_header;
+   
+  RCLCPP_INFO(this->get_logger(), "Service request");          
+  if (request->command == "start"){
+      need_to_send=true;
+    }
+    else if (request->command == "stop"){
+      need_to_send=false;
+    }
+
+  response->ok=true;
+  
+  }
+
+  void timer_callback()
+	{
+        if (loose_one_cycle)
+					{
+						loose_one_cycle=false;
+					}
+        else{
+      
+          auto node_go_to_point = std::make_shared<Client_go_to_point>();
+          auto rdm_position= std::make_shared<RandomPositionSRV::Request>();
+              
+          if (need_to_send){
+            need_to_send=false;
+
+            rdm_position->x_max=5.0;
+            rdm_position->x_min=-5.0;
+            rdm_position->y_max=5.0;
+            rdm_position->y_min=-5.0;
+
+            using ServiceResponseFuture =rclcpp::Client<RandomPositionSRV>::SharedFuture;
+            auto response_received_callback= [this] (ServiceResponseFuture future){
+              X_target=future.get()->x;
+              Y_target=future.get()->y;
+              Theta_target=future.get()->theta;
+              response_from_rdm_position=true;
+            };
+            auto future_result= RP_client->async_send_request(rdm_position, response_received_callback);
+          
+          }
+          if(response_from_rdm_position ){
+
+            response_from_rdm_position=false;
+
+            node_go_to_point->request_->x=X_target;
+            node_go_to_point->request_->y=Y_target;
+            node_go_to_point->request_->theta=Theta_target;
+
+            RCLCPP_INFO(this->get_logger(), "Going to position: x:%f y:%f theta:%f",node_go_to_point->request_->x,node_go_to_point->request_->y,node_go_to_point->request_->theta);
+            
+            node_go_to_point->call_server();
+            
+            need_to_send=true;
+            loose_one_cycle=true;
+          }
+              
+        }		
+	}
+
+
+
+  rclcpp::Service<CommandSRV>::SharedPtr service_;
+	rclcpp::TimerBase::SharedPtr timer_;
+	rclcpp::Client<RandomPositionSRV>::SharedPtr RP_client;
+};
+
+
+}
+
+RCLCPP_COMPONENTS_REGISTER_NODE(ros2_ass1::Server_ros2) 
