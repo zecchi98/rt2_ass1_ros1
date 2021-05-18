@@ -2,7 +2,7 @@
 
 
 import rospy
-from geometry_msgs.msg import Twist, Point
+from geometry_msgs.msg import Twist, Point, Pose
 from nav_msgs.msg import Odometry
 from tf import transformations
 from rt2_ass1_ros1.srv import Position
@@ -27,7 +27,7 @@ kp_a = -3.0
 kp_d = 0.2
 ub_a = 0.6
 lb_a = -0.5
-ub_d = 0.6
+ub_d = 3
 
 
 
@@ -40,15 +40,16 @@ def clbk_odom(msg):
     global yaw_
 
     # position
-    position_ = msg.pose.pose.position
+    position_ = msg.position
     # yaw
-    quaternion = (
-        msg.pose.pose.orientation.x,
-        msg.pose.pose.orientation.y,
-        msg.pose.pose.orientation.z,
-        msg.pose.pose.orientation.w)
-    euler = transformations.euler_from_quaternion(quaternion)
-    yaw_ = euler[2]
+    #quaternion = (
+    #    msg.pose.pose.orientation.x,
+    #    msg.pose.pose.orientation.y,
+    #    msg.pose.pose.orientation.z,
+    #    msg.pose.pose.orientation.w)
+    #euler = transformations.euler_from_quaternion(quaternion)
+    #yaw_ = euler[2]
+    yaw_=msg.orientation.z
 
 
 def change_state(state):
@@ -90,12 +91,13 @@ def go_straight_ahead(des_pos):
 
     if err_pos > dist_precision_:
         twist_msg = Twist()
-        twist_msg.linear.x = 0.3
+        twist_msg.linear.x = 1
         if twist_msg.linear.x > ub_d:
             twist_msg.linear.x = ub_d
 
         twist_msg.angular.z = kp_a*err_yaw
         pub_.publish(twist_msg)
+
     else: # state change conditions
         #print ('Position error: [%s]' % err_pos)
         change_state(2)
@@ -190,10 +192,9 @@ def planning(goal):
 def main():
     global pub_,active_, act_s
     rospy.init_node('go_to_point_action')
-    pub_ = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
-    sub_odom = rospy.Subscriber('/odom', Odometry, clbk_odom)
-    act_s = actionlib.SimpleActionServer(
-        '/go_to_point_action', rt2_ass1_ros1.msg.go_to_pointAction, planning, auto_start=False)
+    pub_ = rospy.Publisher('/wheelsXY', Twist, queue_size=1)
+    sub_odom = rospy.Subscriber('/vrep_geo_pose', Pose, clbk_odom)
+    act_s = actionlib.SimpleActionServer('/go_to_point_action', rt2_ass1_ros1.msg.go_to_pointAction, planning, auto_start=False)
     act_s.start()
 
 

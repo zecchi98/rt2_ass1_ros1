@@ -28,7 +28,6 @@ int main(int argc, char **argv)
    ros::NodeHandle n;
    ros::ServiceServer service= n.advertiseService("/user_interface", user_interface);
    ros::ServiceClient client_rp = n.serviceClient<rt2_ass1_ros1::RandomPosition>("/position_server");
-   //ros::ServiceClient client_p = n.serviceClient<rt2_ass1_ros1::Position>("/go_to_point");
    actionlib::SimpleActionClient<rt2_ass1_ros1::go_to_pointAction> ac("/go_to_point_action", true);
 
    while(!ac.waitForServer(ros::Duration(1.0))){
