@@ -2,7 +2,7 @@
 
 #How to run the code:
 - First of all you need to have the main branch download in a ros1 folder.
-- Then you will have to download this package in a ros2 workspace
+- Then you will have to download this package in a ros2 workspace. "ros2_ass1" need to be in the /src folder
 - You should compile everything and then compile you ros1_bridge
 - In the first shell run source ros1 and then run:
 ```
