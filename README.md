@@ -23,7 +23,7 @@ From now on, you should be able to follow user_interface instruction to move the
 #What is the architecture of the system?
 
 It is exactly the same of the standard package, but "position_server.cpp" and "robot_fsm.cpp" are loaded as componentes in a ros2 workspace.
-"robot_fsm.cpp" is the only file which has a small different structure. Has it is explained in the code, through a timer_callback() which is executed every 100 millieseconds
+"robot_fsm.cpp" is the only file which has a small different structure. Has it is explained in the code, through a timer_callback() which is executed every 100 millieseconds all the main code is controlled. It will check if the boolean "need_to_send" has became true (due to a request from the user_interface), and will decide when a new random position has to be requested in order to send a new goal to the "go_to_point" server. 
 
 
 
