@@ -1,8 +1,6 @@
 # First Assignment of the Research Track 2 course (Robotics Engineering / JEMARO, Unige)
 
-The package contains the nodes and the simulation environment for controlling a mobile robot in the Gazebo simulation environment.
-To launch the node, please run:
-```
-rosrun rt2_assignment1 sim.launch
-```
+The package contains more or less the same package from which we developed the assignment. The only differences are:
+- There are different service names.
+- There is another launcher which will execute only the "user_interface" and the "go_to_point".This launcher will not work alone, it need to be used with the ros2 branch. Informations about how to launch it with ros2 will be explained in the ros2 branch.
 
