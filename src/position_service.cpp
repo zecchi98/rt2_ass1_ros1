@@ -18,7 +18,7 @@ int main(int argc, char **argv)
 {
    ros::init(argc, argv, "random_position_server");
    ros::NodeHandle n;
-   ros::ServiceServer service= n.advertiseService("/position_server", myrandom);
+   ros::ServiceServer service= n.advertiseService("/random_position_service", myrandom);
    ros::spin();
 
    return 0;

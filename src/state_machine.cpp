@@ -20,7 +20,7 @@ int main(int argc, char **argv)
 {
    ros::init(argc, argv, "state_machine");
    ros::NodeHandle n;
-   ros::ServiceServer service= n.advertiseService("/user_interface", user_interface);
+   ros::ServiceServer service= n.advertiseService("/commandservice", user_interface);
    ros::ServiceClient client_rp = n.serviceClient<rt2_ass1_std::RandomPosition>("/random_position_service");
    ros::ServiceClient client_p = n.serviceClient<rt2_ass1_std::Position>("/go_to_point");
    
