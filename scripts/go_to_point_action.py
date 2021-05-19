@@ -66,7 +66,6 @@ def normalize_angle(angle):
 def fix_yaw(des_pos):
     desired_yaw = math.atan2(des_pos.y - position_.y, des_pos.x - position_.x)
     err_yaw = normalize_angle(desired_yaw - yaw_)
-    #rospy.loginfo(err_yaw)
     twist_msg = Twist()
     if math.fabs(err_yaw) > yaw_precision_2_:
         twist_msg.angular.z = kp_a*err_yaw
@@ -77,7 +76,6 @@ def fix_yaw(des_pos):
     pub_.publish(twist_msg)
     # state change conditions
     if math.fabs(err_yaw) <= yaw_precision_2_:
-        #print ('Yaw error: [%s]' % err_yaw)
         change_state(1)
 
 def go_straight_ahead(des_pos):
@@ -86,7 +84,6 @@ def go_straight_ahead(des_pos):
     err_pos = math.sqrt(pow(des_pos.y - position_.y, 2) +
                         pow(des_pos.x - position_.x, 2))
     err_yaw = normalize_angle(desired_yaw - yaw_)
-    #rospy.loginfo(err_yaw)
 
     if err_pos > dist_precision_:
         twist_msg = Twist()
@@ -97,13 +94,8 @@ def go_straight_ahead(des_pos):
         twist_msg.angular.z = kp_a*err_yaw
         pub_.publish(twist_msg)
     else: # state change conditions
-        #print ('Position error: [%s]' % err_pos)
         change_state(2)
 
-    # state change conditions
-    #if math.fabs(err_yaw) > yaw_precision_:
-    #    print ('Yaw error: [%s]' % err_yaw)
-        #change state to 0 missing?????????????
 
 def fix_final_yaw(des_yaw):
     err_yaw = normalize_angle(des_yaw - yaw_)
@@ -118,7 +110,6 @@ def fix_final_yaw(des_yaw):
     pub_.publish(twist_msg)
     # state change conditions
     if math.fabs(err_yaw) <= yaw_precision_2_:
-        #print ('Yaw error: [%s]' % err_yaw)
         change_state(3)
 
 
@@ -134,6 +125,7 @@ def planning(goal):
     global state_, desired_position_
     global act_s
 
+#   desider position and orientation acquired
     desired_position_ = Point()
     desired_position_ = goal.target_position
     des_yaw = goal.theta
@@ -146,7 +138,9 @@ def planning(goal):
     result = rt2_ass1_ros1.msg.go_to_pointResult()
 
     while not rospy.is_shutdown():
+        #during each state, the feedback is updated
         if act_s.is_preempt_requested():
+            #if the goal is deleted then the system stop the robot through the function done()
             rospy.loginfo('Goal was preempted')
             act_s.set_preempted()
             done()
