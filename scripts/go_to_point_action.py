@@ -94,9 +94,6 @@ def go_straight_ahead(des_pos):
         change_state(2)
 
     # state change conditions
-    #if math.fabs(err_yaw) > yaw_precision_:
-    #    print ('Yaw error: [%s]' % err_yaw)
-        #change state to 0 missing?????????????
 
 def fix_final_yaw(des_yaw):
     err_yaw = normalize_angle(des_yaw - yaw_)
