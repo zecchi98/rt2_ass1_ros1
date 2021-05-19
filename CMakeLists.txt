@@ -28,9 +28,6 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "srv/Command.srv"
   "srv/Position.srv"
 )
-# uncomment the following section in order to fill in
-# further dependencies manually.
-# find_package(<dependency> REQUIRED)
 
 add_library(robot_fsm_ros2 SHARED src/robot_fsm.cpp)
 add_library(position_server_ros2 SHARED src/position_server.cpp)
@@ -56,6 +53,8 @@ rosidl_target_interfaces(robot_fsm_ros2
 install(TARGETS 
   robot_fsm_ros2 
   position_server_ros2
+  comp_position
+  comp_robot_fsm
   DESTINATION lib/${PROJECT_NAME}
   LIBRARY DESTINATION lib
   )

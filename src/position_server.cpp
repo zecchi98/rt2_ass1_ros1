@@ -14,6 +14,9 @@ rclcpp::Node::SharedPtr g_node = nullptr;
 using std::placeholders::_1;
 using std::placeholders::_2;
 using std::placeholders::_3;
+
+
+
 namespace ros2_ass1
 {
 class Server_rdm_position : public rclcpp::Node
@@ -22,6 +25,7 @@ public:
   Server_rdm_position(const rclcpp::NodeOptions & options)
   : Node("Server_rdm_position", options)
   {
+    //when the server will be called, then the handle_service void will be executed in order to genereate a response
     service_ = this->create_service<RandomPositionSRV>("random_position_service", std::bind(&Server_rdm_position::handle_service, this, _1, _2, _3));
    }
    
@@ -38,10 +42,14 @@ void handle_service(
 {
   (void)request_header;
 
+
+  //here the rensponse will be generated
   RCLCPP_INFO(this->get_logger(), "Service request");
   response->x= randMToN(request->x_min, request->x_max);
   response->y= randMToN(request->y_min, request->y_max);
   response->theta = randMToN(-3.14, 3.14);
+
+
 }
 
   rclcpp::Service<RandomPositionSRV>::SharedPtr service_;
@@ -50,17 +58,3 @@ void handle_service(
 
 
 RCLCPP_COMPONENTS_REGISTER_NODE(ros2_ass1::Server_rdm_position) 
-
-/*
-int main(int argc, char ** argv)
-{
-  rclcpp::init(argc, argv);
-  g_node = rclcpp::Node::make_shared("position_server_ros2");
-  auto server = g_node->create_service<RandomPositionSRV>("random_position_service", handle_service);
-  
-  rclcpp::spin(g_node);
-  rclcpp::shutdown();
-  g_node = nullptr;
-  return 0;
-}
-*/
