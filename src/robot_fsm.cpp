@@ -134,6 +134,8 @@ private:
 
   void timer_callback()
 	{
+        //this below lines have been implemented due to give priority to the "/commandservice" server. Indeed it will loose a cycle of the timer_callback
+        //and so the system will check if the server has requested any messages before calling the "timer_callback" again.
         if (loose_one_cycle)
 					{
 						loose_one_cycle=false;
